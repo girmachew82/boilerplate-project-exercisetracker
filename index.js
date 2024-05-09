@@ -19,11 +19,18 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
     username:{type:String, required: true},
-  
 })
 
 const User = mongoose.model('User',userSchema)
 
+const exerciseSchema = new Schema({
+  user_id:{type:String, required: true},
+  description:{type:String, required: true},
+  duration: {type:Number, required:true,"message":"Duration is required"},
+  date: {type: Date,default: Date.now},
+})
+
+const Exercise = mongoose.model('Exercise',exerciseSchema)
 
 app.post("/api/users", (req, res)=>{
   const username = req.body.username
@@ -35,6 +42,18 @@ User.create({username}).then((user)=>{
  
 })
 
+app.get("/api/users",(req, res)=>{
+  User.find()
+  .then((users)=>{
+    return [
+      users.username,
+      users._id
+    ]
+  })
+  .catch((errer)=>{
+    res.json({"error":"Error while fetching users"})
+  })
+})
 
 
 const listener = app.listen(process.env.PORT || 3000, () => {
