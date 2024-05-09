@@ -39,7 +39,6 @@ User.create({username}).then((user)=>{
 }).catch((error)=>{
   res.json({"error":"Error trying to create a user"})
 })
- 
 })
 
 app.get("/api/users",(req, res)=>{
@@ -54,8 +53,6 @@ app.get("/api/users",(req, res)=>{
     res.json({"error":"Error while fetching users"})
   })
 })
-
-
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
 })
