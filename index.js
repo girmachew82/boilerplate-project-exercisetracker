@@ -4,7 +4,7 @@ const cors = require('cors')
 require('dotenv').config()
 const mongoose = require('mongoose')
 app.use(cors())
-app.use(express.urlencoded({extended:false}))
+app.use(express.urlencoded({ extended: false }))
 app.use(express.static('public'))
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
@@ -12,46 +12,83 @@ app.get('/', (req, res) => {
 
 
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-.then(()=>console.log("Connected"))
-.catch((err, res)=>console.log("Error"+err))
+  .then(() => console.log("Connected"))
+  .catch((err, res) => console.log("Error" + err))
 // create user 
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    username:{type:String, required: true},
+  _id: mongoose.Schema.Types.ObjectId,
+  username: { type: String, required: true },
 })
 
-const User = mongoose.model('User',userSchema)
+const User = mongoose.model('User', userSchema)
 
 const exerciseSchema = new Schema({
-  user_id:{type:String, required: true},
-  description:{type:String, required: true},
-  duration: {type:Number, required:true,"message":"Duration is required"},
-  date: {type: Date,default: Date.now},
+  _id: mongoose.Schema.Types.ObjectId,
+  user_id: { type: String, required: true },
+  description: { type: String, required: true },
+  duration: { type: Number, required: true, "message": "Duration is required" },
+  date: { type: Date, default: Date.now },
 })
 
-const Exercise = mongoose.model('Exercise',exerciseSchema)
+const Exercise = mongoose.model('Exercise', exerciseSchema)
 
-app.post("/api/users", (req, res)=>{
-  const username = req.body.username
-User.create({username}).then((user)=>{
-  res.json(user)
-}).catch((error)=>{
-  res.json({"error":"Error trying to create a user"})
-})
+app.post("/api/users", (req, res) => {
+  const userSave = new User({
+    _id: new mongoose.Types.ObjectId(),
+    username: req.body.username
+  })
+  userSave.save()
+  .then((user) => {
+    res.status(201).json({
+      message:"User created",
+      createdUser:{
+        username: userSave.username,
+        _id:userSave._id
+      }
+    })
+  
+  }).catch((error) => {
+    res.json({ "error": "Error trying to create a user" })
+  })
 })
 
-app.get("/api/users",(req, res)=>{
+app.get("/api/users", (req, res) => {
   User.find()
-  .then((users)=>{
-    return [
-      users.username,
-      users._id
-    ]
-  })
-  .catch((errer)=>{
-    res.json({"error":"Error while fetching users"})
-  })
+    .then((users) => {
+      return [
+        users.username,
+        users._id
+      ]
+    })
+    .catch((errer) => {
+      res.json({ "error": "Error while fetching users" })
+    })
+})
+
+app.post("/api/users/:_id/exercises", (req, res) => {
+  const id = req.params._id
+  const {description, duration, date} = req.body
+
+  res.json({ id, description, duration, date })
+  const exerciseSave = new Exercise({ id, description, duration, date })
+    exerciseSave.save()
+    .then((exercise) => {
+      res.status(201).json({
+      message:"Exercise created",
+      createdUser:{
+        description: exerciseSave.description,
+        duration: exerciseSave.duration,
+        date: exerciseSave.date,
+        _id:exerciseSave._id
+      }
+    })
+    })
+    .catch((error) => {
+      error: "Error while creating an exercise"
+    })
+    
 })
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
