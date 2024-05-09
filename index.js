@@ -11,7 +11,14 @@ app.get('/', (req, res) => {
 });
 
 // create user 
+const usernames = []
+
 app.post("/api/users", (req, res)=>{
+  const usename = req.body.usernames
+  const foundIndex  = usernames.indexOf[usename]
+  if(foundIndex < 0){
+    usernames.push(usename)
+  }
   res.json(req.body.username)
 })
 
