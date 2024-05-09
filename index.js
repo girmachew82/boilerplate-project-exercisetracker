@@ -14,10 +14,10 @@ app.get('/', (req, res) => {
 const usernames = []
 
 app.post("/api/users", (req, res)=>{
-  const usename = req.body.usernames
-  const foundIndex  = usernames.indexOf[usename]
+  const username = req.body.usernames
+  const foundIndex  = usernames.indexOf[username]
   if(foundIndex < 0){
-    usernames.push(usename)
+    usernames.push(username)
   }
   res.json(req.body.username)
 })
