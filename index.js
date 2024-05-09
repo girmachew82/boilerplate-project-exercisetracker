@@ -27,15 +27,12 @@ const User = mongoose.model('User',userSchema)
 
 app.post("/api/users", (req, res)=>{
   const username = req.body.username
-  const savedUsername = User.create({username})
-  if(savedUsername){
-    res.json(req.body.username)
-  }else{
-    res.json({
-      message:"Something want wrong"
-    })
-  }
-  
+User.create({username}).then((user)=>{
+  res.json(user)
+}).catch((error)=>{
+  res.json({"error":"Error trying to create a user"})
+})
+ 
 })
 
 
