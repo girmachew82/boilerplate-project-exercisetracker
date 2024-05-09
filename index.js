@@ -28,7 +28,7 @@ const exerciseSchema = new Schema({
   _id: mongoose.Schema.Types.ObjectId,
   user_id: { type: String, required: true },
   description: { type: String, required: true },
-  duration: { type: Number, required: true, "message": "Duration is required" },
+  duration: { type: Number, required: true},
   date: { type: Date, default: Date.now },
 })
 
@@ -42,13 +42,11 @@ app.post("/api/users", (req, res) => {
   userSave.save()
   .then((user) => {
     res.status(201).json({
-      message:"User created",
-      createdUser:{
+      
         username: userSave.username,
         _id:userSave._id
-      }
+      
     })
-  
   }).catch((error) => {
     res.json({ "error": "Error trying to create a user" })
   })
@@ -68,21 +66,24 @@ app.get("/api/users", (req, res) => {
 })
 
 app.post("/api/users/:_id/exercises", (req, res) => {
-  const id = req.params._id
-  const {description, duration, date} = req.body
 
-  res.json({ id, description, duration, date })
-  const exerciseSave = new Exercise({ id, description, duration, date })
-    exerciseSave.save()
-    .then((exercise) => {
-      res.status(201).json({
-      message:"Exercise created",
-      createdUser:{
+    User.findById(req.params._id)
+     .then((user) => {
+      const exerciseSave = new Exercise({
+        _id: new mongoose.Types.ObjectId(), 
+        user_id: req.params._id, 
+        description: req.body.description, 
+        duration: req.body.duration, 
+        date: req.body.date 
+      })
+      exerciseSave.save()
+         res.status(201).json({
+        username:user.username,
         description: exerciseSave.description,
         duration: exerciseSave.duration,
         date: exerciseSave.date,
         _id:exerciseSave._id
-      }
+      
     })
     })
     .catch((error) => {
