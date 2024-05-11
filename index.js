@@ -65,17 +65,13 @@ try{
   const fetchUsers = await User.find()
   .select("username _id")
   .exec()
-  res.json({
-       users : fetchUsers.map(user =>{
-      return{
-      username: user.username,
-      _id: user._id
-      }
-    })
-  })
-
+  const usersData = fetchUsers.map(user => ({
+    username: user.username,
+    _id: user._id
+}));
+res.json(usersData);
 }catch(errr){
-  res.json({
+  res.status(500).json({
     message:"Something want wrong while fetching users"
   })
 }
