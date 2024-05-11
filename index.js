@@ -39,7 +39,7 @@ app.post("/api/users", async (req, res) => {
   const check = await User.find({ username: uname }).exec()
   if (check.length != 0) {
     res.json({
-          message: "User already exist",
+      message: "User already exist",
     })
   } else {
     const userSave = new User({
@@ -58,37 +58,34 @@ app.post("/api/users", async (req, res) => {
   }
 })
 
-app.get("/api/users", async(req, res) => {
- 
-    
-try{
-  const fetchUsers = await User.find()
-  .select("username _id")
-  .exec()
-  const usersData = fetchUsers.map(user => ({
-    username: user.username,
-    _id: user._id
-}));
-res.json(usersData);
-}catch(errr){
-  res.status(500).json({
-    message:"Something want wrong while fetching users"
-  })
-}
-    
+app.get("/api/users", async (req, res) => {
+  try {
+    const fetchUsers = await User.find()
+      .select("username _id")
+      .exec()
+    const usersData = fetchUsers.map(user => ({
+      username: user.username,
+      _id: user._id
+    }));
+    res.json(usersData);
+  } catch (errr) {
+    res.status(500).json({
+      message: "Something want wrong while fetching users"
+    })
+  }
+
 })
 app.post("/api/users/:_id/exercises", (req, res) => {
   let strDate = new Date(req.body.date)
-  if (strDate !='Invalid Date')
+  if (strDate != 'Invalid Date')
     var dateInput = req.body.date
   else
-  dateInput = Date.now()
+    dateInput = Date.now()
   User.findById(req.params._id)
-  .then((user) => {
-    if (!user) {
+    .then((user) => {
+      if (!user) {
         return res.status(404).json({ message: "User not found" });
-    }
-
+      }
       const exerciseSave = new Exercise({
         _id: new mongoose.Types.ObjectId(),
         user_id: req.params._id,
@@ -97,22 +94,58 @@ app.post("/api/users/:_id/exercises", (req, res) => {
         date: dateInput
       })
       exerciseSave.save()
-
-      .then((exerciseSaved)=>{
-      res.status(201).json({
-        username: user.username,
-        description: exerciseSave.description,
-        duration: exerciseSave.duration,
-        date: exerciseSave.date.toUTCString(),
-        _id: exerciseSave._id
-      })
-    })
+        .then((exerciseSaved) => {
+          res.status(201).json({
+            username: user.username,
+            description: exerciseSaved.description,
+            duration: exerciseSaved.duration,
+            date: exerciseSaved.date.toUTCString(),
+            _id: exerciseSaved._id
+          })
+        })
     })
     .catch((error) => {
       error: "Error while creating an exercise"
     })
-
 })
+
+app.get("/api/users/:_id/logs", (req, res) => {
+  // Extract user ID from request params
+  const userId = req.params._id;
+
+  // Check if user exists
+  User.findById(userId)
+      .then(user => {
+          if (!user) {
+              return res.status(404).json({ message: "User not found" });
+          }
+
+          // Find all exercises associated with the user
+          Exercise.find({ user_id: userId })
+              .then(exercises => {
+                  const exerciseLog = exercises.map(exercise => ({
+                      description: exercise.description,
+                      duration: exercise.duration,
+                      date: exercise.date.toUTCString()
+                  }));
+                  res.json({
+                    username: user.username,
+                    count: exercises.length,
+                      _id: user._id,
+              
+                      log: exerciseLog,
+                    
+                  });
+              })
+              .catch(error => {
+                  res.status(500).json({ message: "Error while fetching exercises" });
+              });
+      })
+      .catch(error => {
+          res.status(500).json({ message: "Error while finding user" });
+      });
+});
+
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Your app is listening on port ' + listener.address().port)
 })
