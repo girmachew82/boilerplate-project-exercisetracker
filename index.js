@@ -58,17 +58,28 @@ app.post("/api/users", async (req, res) => {
   }
 })
 
-app.get("/api/users", (req, res) => {
-  User.find()
+app.get("/api/users", async(req, res) => {
+ 
+    
+try{
+  const fetchUsers = await User.find()
   .select("username _id")
-    .then((results) => {
-      res.json({
-        results
-      })
+  .exec()
+  res.json({
+       users : fetchUsers.map(user =>{
+      return{
+      username: user.username,
+      _id: user._id
+      }
     })
-    .catch((errer) => {
-      res.json({ "error": "Error while fetching users" })
-    })
+  })
+
+}catch(errr){
+  res.json({
+    message:"Something want wrong while fetching users"
+  })
+}
+    
 })
 
 app.post("/api/users/:_id/exercises", (req, res) => {
