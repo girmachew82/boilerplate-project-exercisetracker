@@ -77,7 +77,6 @@ res.json(usersData);
 }
     
 })
-
 app.post("/api/users/:_id/exercises", (req, res) => {
   let strDate = new Date(req.body.date)
   if (strDate !='Invalid Date')
@@ -85,7 +84,11 @@ app.post("/api/users/:_id/exercises", (req, res) => {
   else
   dateInput = Date.now()
   User.findById(req.params._id)
-    .then((user) => {
+  .then((user) => {
+    if (!user) {
+        return res.status(404).json({ message: "User not found" });
+    }
+
       const exerciseSave = new Exercise({
         _id: new mongoose.Types.ObjectId(),
         user_id: req.params._id,
@@ -94,14 +97,16 @@ app.post("/api/users/:_id/exercises", (req, res) => {
         date: dateInput
       })
       exerciseSave.save()
+
+      .then((exerciseSaved)=>{
       res.status(201).json({
         username: user.username,
         description: exerciseSave.description,
         duration: exerciseSave.duration,
         date: exerciseSave.date.toUTCString(),
         _id: exerciseSave._id
-
       })
+    })
     })
     .catch((error) => {
       error: "Error while creating an exercise"
