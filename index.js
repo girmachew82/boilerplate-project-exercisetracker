@@ -113,6 +113,11 @@ app.get("/api/users/:_id/logs", (req, res) => {
   // Extract user ID from request params
   const userId = req.params._id;
 
+  // Parse query parameters
+  const fromDate = req.query.from ? new Date(req.query.from) : null;
+  const toDate = req.query.to ? new Date(req.query.to) : null;
+  const limit = req.query.limit ? parseInt(req.query.limit) : null;
+
   // Check if user exists
   User.findById(userId)
       .then(user => {
@@ -120,27 +125,34 @@ app.get("/api/users/:_id/logs", (req, res) => {
               return res.status(404).json({ message: "User not found" });
           }
 
-          // Find all exercises associated with the user
-          Exercise.find({ user_id: userId })
-              .then(exercises => {
-                  const exerciseLog = exercises.map(exercise => ({
-                      description: exercise.description,
-                      duration: exercise.duration,
-                      date: exercise.date.toDateString()
-                  }));
-                  res.json({
-                    username: user.username,
-                    count: exercises.length,
-                      _id: user._id,
-                     log: exerciseLog,
-                    
-                  });
-              })
-              .catch(error => {
-                  res.status(500).json({ message: "Error while fetching exercises" });
+          // Define query for finding exercises
+          const query = { user_id: userId };
+          if (fromDate) query.date = { $gte: fromDate };
+          if (toDate) {
+              if (!query.date) query.date = {};
+              query.date.$lte = toDate;
+          }
+
+          // Find exercises based on query
+          let exerciseQuery = Exercise.find(query);
+          if (limit) exerciseQuery = exerciseQuery.limit(limit);
+
+          exerciseQuery.then(exercises => {
+              const exerciseLog = exercises.map(exercise => ({
+                  description: exercise.description,
+                  duration: exercise.duration,
+                  date: exercise.date.toDateString() // Format date as a string using toDateString()
+              }));
+              res.json({
+                  _id: user._id,
+                  username: user.username,
+                  log: exerciseLog,
+                  count: exercises.length
               });
-      })
-      .catch(error => {
+          }).catch(error => {
+              res.status(500).json({ message: "Error while fetching exercises" });
+          });
+      }).catch(error => {
           res.status(500).json({ message: "Error while finding user" });
       });
 });
