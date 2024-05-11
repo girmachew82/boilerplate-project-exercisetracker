@@ -96,11 +96,12 @@ app.post("/api/users/:_id/exercises", (req, res) => {
       exerciseSave.save()
         .then((exerciseSaved) => {
           res.status(201).json({
-            user: user.username,
+            username: user.username,
             description: exerciseSaved.description,
             duration: exerciseSaved.duration,
-            date: exerciseSaved.date.toUTCString(),
-            _id: exerciseSaved._id
+            _id: exerciseSaved._id,
+            date: exerciseSaved.date.toUTCString()
+         
           })
         })
     })
@@ -124,7 +125,6 @@ app.get("/api/users/:_id/logs", (req, res) => {
           if (!user) {
               return res.status(404).json({ message: "User not found" });
           }
-
           // Define query for finding exercises
           const query = { user_id: userId };
           if (fromDate) query.date = { $gte: fromDate };
@@ -132,7 +132,6 @@ app.get("/api/users/:_id/logs", (req, res) => {
               if (!query.date) query.date = {};
               query.date.$lte = toDate;
           }
-
           // Find exercises based on query
           let exerciseQuery = Exercise.find(query);
           if (limit) exerciseQuery = exerciseQuery.limit(limit);
