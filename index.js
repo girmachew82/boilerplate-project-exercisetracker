@@ -96,7 +96,7 @@ app.post("/api/users/:_id/exercises", (req, res) => {
       exerciseSave.save()
         .then((exerciseSaved) => {
           res.status(201).json({
-            user: user,
+            user: user.username,
             description: exerciseSaved.description,
             duration: exerciseSaved.duration,
             date: exerciseSaved.date.toUTCString(),
