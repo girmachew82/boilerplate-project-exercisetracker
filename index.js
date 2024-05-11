@@ -76,49 +76,38 @@ app.get("/api/users", async (req, res) => {
 
 })
 app.post("/api/users/:_id/exercises", (req, res) => {
-  let strDate = new Date(req.body.date);
-  let dateInput;
-  if (strDate !== 'Invalid Date') {
-      dateInput = req.body.date;
-  } else {
-      dateInput = Date.now();
-  }
-
+  let strDate = new Date(req.body.date)
+  if (strDate != 'Invalid Date')
+    var dateInput = req.body.date
+  else
+    dateInput = Date.now()
   User.findById(req.params._id)
-      .then(user => {
-          if (!user) {
-              return res.status(404).json({ message: "User not found" });
-          }
-
-          const exerciseSave = new Exercise({
-              _id: new mongoose.Types.ObjectId(),
-              user_id: req.params._id,
-              description: req.body.description,
-              duration: req.body.duration,
-              date: dateInput
-          });
-
-          exerciseSave.save()
-              .then(savedExercise => {
-                  // Return user object along with the newly added exercise fields
-                  res.status(201).json({
-                      _id: user._id,
-                      username: user.username,
-                      description: savedExercise.description,
-                      duration: savedExercise.duration,
-                      date: savedExercise.date.toUTCString(),
-                      exerciseId: savedExercise._id
-                  });
-              })
-              .catch(error => {
-                  res.status(500).json({ message: "Error while saving exercise" });
-              });
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const exerciseSave = new Exercise({
+        _id: new mongoose.Types.ObjectId(),
+        user_id: req.params._id,
+        description: req.body.description,
+        duration: req.body.duration,
+        date: dateInput
       })
-      .catch(error => {
-          res.status(500).json({ message: "Error while finding user" });
-      });
-});
-
+      exerciseSave.save()
+        .then((exerciseSaved) => {
+          res.status(201).json({
+            user: user,
+            description: exerciseSaved.description,
+            duration: exerciseSaved.duration,
+            date: exerciseSaved.date.toUTCString(),
+            _id: exerciseSaved._id
+          })
+        })
+    })
+    .catch((error) => {
+      error: "Error while creating an exercise"
+    })
+})
 
 app.get("/api/users/:_id/logs", (req, res) => {
   // Extract user ID from request params
